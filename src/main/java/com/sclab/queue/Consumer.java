@@ -1,40 +1,71 @@
 package com.sclab.queue;
 
+import com.sclab.queue.config.ConsumerConfigs;
 import com.sclab.queue.util.FileUtil;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Properties;
 
 public class Consumer {
-    final static String PROPERTY_FILE_PATH = "src/main/resources/application.properties";
+    final static String BY_DEFAULT_PROPERTY_FILE_PATH = "src/main/resources/application.properties";
     final static String OUT_DATA_FILE_PATH = "src/main/resources/data.csv";
-    final static String TOPIC = "topic";
-    final static String POLL_TIMEOUT_MILLIS = "poll-timeout-millis";
 
     public static void main(String[] args) {
         consumeMessages();
     }
 
     public static void consumeMessages() {
-        // create blank file to store out data
         FileUtil.createNewFile(OUT_DATA_FILE_PATH);
         FileUtil.appendIntoFile(OUT_DATA_FILE_PATH, "key,value,headers\n");
-        // Create Properties and put sensitive data
-        Properties properties = FileUtil.readPropertyFile(PROPERTY_FILE_PATH);
-        // create consumer
+        Properties properties = FileUtil.readPropertyFile(BY_DEFAULT_PROPERTY_FILE_PATH);
+        consumeMessages(properties);
+    }
+
+    /**
+     * create blank file to store out data,
+     * Create Properties and put sensitive data
+     *
+     * @param propertyFilePath
+     */
+    public static void consumeMessages(String propertyFilePath) {
+        FileUtil.createNewFile(OUT_DATA_FILE_PATH);
+        FileUtil.appendIntoFile(OUT_DATA_FILE_PATH, "key,value,headers\n");
+        Properties properties = FileUtil.readPropertyFile(propertyFilePath);
+    }
+
+    /**
+     * create consumer,
+     * subscribe to topic,
+     * poll and consume records,
+     *
+     * @param properties
+     */
+    private static void consumeMessages(Properties properties) {
+        LocalDateTime timeStamp = LocalDateTime.now();
+        Long consumeUntilSeconds = null;
+        if (properties.containsKey(ConsumerConfigs.CONSUME_UNTIL_MINUTES)) {
+            consumeUntilSeconds =
+                    Long.parseLong(properties.getProperty(ConsumerConfigs.CONSUME_UNTIL_MINUTES)) * 60;
+        }
+        if (properties.containsKey(ConsumerConfigs.CONSUME_UNTIL_SECONDS)) {
+            consumeUntilSeconds =
+                    Long.parseLong(properties.getProperty(ConsumerConfigs.CONSUME_UNTIL_SECONDS));
+        }
         final KafkaConsumer<String, String> kafkaConsumer = new KafkaConsumer<>(properties);
-        // subscribe to topic
-        kafkaConsumer.subscribe(Arrays.asList(properties.getProperty(TOPIC)));
-        // poll and consume records
-        while (true){
+        kafkaConsumer.subscribe(Arrays.asList(properties.getProperty(ConsumerConfigs.TOPIC)));
+        while (true) {
             ConsumerRecords<String, String> consumerRecords = kafkaConsumer.poll(
-                    Duration.ofMillis(Long.parseLong(properties.getProperty(POLL_TIMEOUT_MILLIS))));
-            for(ConsumerRecord<String, String> consumerRecord: consumerRecords){
+                    Duration.ofMillis(Long.parseLong(properties.getProperty(ConsumerConfigs.POLL_TIMEOUT_MILLIS))));
+            for (ConsumerRecord<String, String> consumerRecord : consumerRecords) {
                 FileUtil.appendIntoFile(OUT_DATA_FILE_PATH,
-                        consumerRecord.key()+","+consumerRecord.value()+","+consumerRecord.headers()+"\n");
+                        consumerRecord.key() + "," + consumerRecord.value() + "," + consumerRecord.headers() + "\n");
+            }
+            if (consumeUntilSeconds != null && LocalDateTime.now().isAfter(timeStamp.plusSeconds(consumeUntilSeconds))) {
+                break;
             }
         }
     }
