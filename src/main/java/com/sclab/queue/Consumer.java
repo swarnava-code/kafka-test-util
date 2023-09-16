@@ -44,7 +44,7 @@ public class Consumer {
      *
      * @param properties
      */
-    private static void consumeMessages(Properties properties) {
+    public static void consumeMessages(Properties properties) {
         LocalDateTime timeStamp = LocalDateTime.now();
         Long consumeUntilSeconds = null;
         if (properties.containsKey(ConsumerConfig.CONSUME_UNTIL_MINUTES)) {
