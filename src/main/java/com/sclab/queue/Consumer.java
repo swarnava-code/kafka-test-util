@@ -1,6 +1,6 @@
 package com.sclab.queue;
 
-import com.sclab.queue.config.ConsumerConfigs;
+import com.sclab.queue.config.ConsumerConfig;
 import com.sclab.queue.util.FileUtil;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -47,19 +47,19 @@ public class Consumer {
     private static void consumeMessages(Properties properties) {
         LocalDateTime timeStamp = LocalDateTime.now();
         Long consumeUntilSeconds = null;
-        if (properties.containsKey(ConsumerConfigs.CONSUME_UNTIL_MINUTES)) {
+        if (properties.containsKey(ConsumerConfig.CONSUME_UNTIL_MINUTES)) {
             consumeUntilSeconds =
-                    Long.parseLong(properties.getProperty(ConsumerConfigs.CONSUME_UNTIL_MINUTES)) * 60;
+                    Long.parseLong(properties.getProperty(ConsumerConfig.CONSUME_UNTIL_MINUTES)) * 60;
         }
-        if (properties.containsKey(ConsumerConfigs.CONSUME_UNTIL_SECONDS)) {
+        if (properties.containsKey(ConsumerConfig.CONSUME_UNTIL_SECONDS)) {
             consumeUntilSeconds =
-                    Long.parseLong(properties.getProperty(ConsumerConfigs.CONSUME_UNTIL_SECONDS));
+                    Long.parseLong(properties.getProperty(ConsumerConfig.CONSUME_UNTIL_SECONDS));
         }
         final KafkaConsumer<String, String> kafkaConsumer = new KafkaConsumer<>(properties);
-        kafkaConsumer.subscribe(Arrays.asList(properties.getProperty(ConsumerConfigs.TOPIC)));
+        kafkaConsumer.subscribe(Arrays.asList(properties.getProperty(ConsumerConfig.TOPIC)));
         while (true) {
             ConsumerRecords<String, String> consumerRecords = kafkaConsumer.poll(
-                    Duration.ofMillis(Long.parseLong(properties.getProperty(ConsumerConfigs.POLL_TIMEOUT_MILLIS))));
+                    Duration.ofMillis(Long.parseLong(properties.getProperty(ConsumerConfig.POLL_TIMEOUT_MILLIS))));
             for (ConsumerRecord<String, String> consumerRecord : consumerRecords) {
                 FileUtil.appendIntoFile(OUT_DATA_FILE_PATH,
                         consumerRecord.key() + "," + consumerRecord.value() + "," + consumerRecord.headers() + "\n");

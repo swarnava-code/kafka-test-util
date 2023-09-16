@@ -32,9 +32,13 @@ public class FileUtil {
     }
 
     public static void createNewFile(String filePath) {
+        createNewFile(filePath, "");
+    }
+
+    public static void createNewFile(String filePath, String data) {
         try {
             FileWriter fileWriter = new FileWriter(filePath);
-            fileWriter.write(filePath);
+            fileWriter.write(data);
             fileWriter.close();
         } catch (Exception e) {
             e.printStackTrace();
