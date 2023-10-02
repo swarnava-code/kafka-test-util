@@ -25,6 +25,11 @@
             <artifactId>json</artifactId>
             <version>20230618</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro</artifactId>
+            <version>1.11.3</version>
+        </dependency>
     </dependencies>
 
 </project>
