@@ -25,3 +25,7 @@ auto.offset.reset=latest
 ### auto.offset.reset
 - `auto.offset.reset=earliest`
 - `auto.offset.reset=latest`
+
+### References
+- [YT video on Kafka Consumer](https://www.youtube.com/watch?v=NpzwlWYLOdE)
+- [Medium post about publish message with avro schema](https://medium.com/@affanhasan88/how-to-publish-and-consume-avro-encoded-apache-kafka-messages-using-java-44ed42890637)
